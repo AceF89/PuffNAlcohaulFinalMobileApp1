@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "582469330775",
+    "firebase_url": "https://alcohol-delivery-app-7120d-default-rtdb.firebaseio.com",
+    "project_id": "alcohol-delivery-app-7120d",
+    "storage_bucket": "alcohol-delivery-app-7120d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:582469330775:android:10db67febb08f66f42c012",
+        "android_client_info": {
+          "package_name": "com.gadgetvala.alcoholdelivery"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOqghNt66cAxDNJks-yeo2U4Z3JNPA3GI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
