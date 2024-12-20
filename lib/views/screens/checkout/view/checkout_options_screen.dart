@@ -129,7 +129,7 @@ class _CheckoutOtionsScreenState extends State<CheckoutOtionsScreen> {
               ),
               SizedBoxH5(),
               Text(
-                'Please upload your driving license photo',
+                'Please upload your Driver’s License. Order CAN ONLY be handed to person on the LICENSE',
                 style: TextStyle(
                   fontSize: Sizes.s16.sp,
                   color: AppColors.secondaryFontColor,

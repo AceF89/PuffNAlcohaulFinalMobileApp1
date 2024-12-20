@@ -40,4 +40,9 @@ abstract class AuthApi {
     String? code,
     required String newPassword,
   });
+
+  Future<Result<String, String>> verifyOTP({
+    String? email,
+    String? code,
+  });
 }

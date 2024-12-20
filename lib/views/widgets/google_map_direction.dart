@@ -68,7 +68,8 @@ class _GoogleMapDirectionState extends State<GoogleMapDirection> {
     setState(() {
       _markers.clear();
 
-      if (widget.originCoordinates != null && widget.destinationCoordinates != null) {
+      if (widget.originCoordinates != null &&
+          widget.destinationCoordinates != null) {
         _markers.addAll([
           if (!widget.hideOriginMarker)
             Marker(
@@ -110,7 +111,9 @@ class _GoogleMapDirectionState extends State<GoogleMapDirection> {
       polylineId: PolylineId(polylineIdVal),
       width: 2,
       color: AppColors.primaryColor,
-      points: direction.decodedPolylies.map((p) => LatLng(p.latitude, p.longitude)).toList(),
+      points: direction.decodedPolylies
+          .map((p) => LatLng(p.latitude, p.longitude))
+          .toList(),
     );
 
     setState(() {
@@ -123,7 +126,8 @@ class _GoogleMapDirectionState extends State<GoogleMapDirection> {
     final String polylineIdVal = 'polyline_${_polylines.length + 1}';
     _googleMapController?.animateCamera(
       CameraUpdate.newLatLngBounds(
-        LatLngBounds(southwest: direction.boundSW, northeast: direction.boundNE),
+        LatLngBounds(
+            southwest: direction.boundSW, northeast: direction.boundNE),
         25.0,
       ),
     );
@@ -132,7 +136,9 @@ class _GoogleMapDirectionState extends State<GoogleMapDirection> {
       polylineId: PolylineId(polylineIdVal),
       width: 2,
       color: AppColors.primaryColor,
-      points: direction.decodedPolylies.map((p) => LatLng(p.latitude, p.longitude)).toList(),
+      points: direction.decodedPolylies
+          .map((p) => LatLng(p.latitude, p.longitude))
+          .toList(),
     );
 
     setState(() {
@@ -161,7 +167,8 @@ class _GoogleMapDirectionState extends State<GoogleMapDirection> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.originCoordinates == null || widget.destinationCoordinates == null) {
+    if (widget.originCoordinates == null ||
+        widget.destinationCoordinates == null) {
       return _buildGoogleMapFailure();
     }
 
@@ -176,7 +183,8 @@ class _GoogleMapDirectionState extends State<GoogleMapDirection> {
                 absorbing: false,
                 child: GoogleMap(
                   gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-                    Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer())
+                    Factory<OneSequenceGestureRecognizer>(
+                        () => EagerGestureRecognizer())
                   },
                   compassEnabled: true,
                   mapToolbarEnabled: true,
@@ -189,7 +197,8 @@ class _GoogleMapDirectionState extends State<GoogleMapDirection> {
                   polylines: _polylines,
                   markers: _markers,
                   onMapCreated: _onMapCreated,
-                  initialCameraPosition: const CameraPosition(target: LatLng(37.42796133580664, -122.085749655962)),
+                  initialCameraPosition: const CameraPosition(
+                      target: LatLng(37.42796133580664, -122.085749655962)),
                 ),
               ),
             ),

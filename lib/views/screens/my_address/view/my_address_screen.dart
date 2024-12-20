@@ -38,7 +38,7 @@ class _MyAddressScreenState extends State<MyAddressScreen> {
   }
 
   Future<void> onTapDeleteMeHandler(BuildContext context, num id) async {
-    if (_provider.address.length <= 2) {
+    if (_provider.address.length <= 1) {
       context.showFailureSnackBar(
           'Address List should have at least 2 addresses to delete old address');
       return;

@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:alcoholdeliver/core/constants/app_assets.dart';
 import 'package:alcoholdeliver/core/constants/app_colors.dart';
 import 'package:alcoholdeliver/core/constants/app_font_family.dart';
 import 'package:alcoholdeliver/core/constants/app_sizes.dart';
 import 'package:alcoholdeliver/core/constants/constants.dart';
+import 'package:alcoholdeliver/model/google/location_result.dart';
 import 'package:alcoholdeliver/providers/cart_provider.dart';
 import 'package:alcoholdeliver/routes/routes.dart';
+import 'package:alcoholdeliver/services/location/location_service.dart';
 import 'package:alcoholdeliver/views/screens/homepage/provider/driver_homepage_provider.dart';
 import 'package:alcoholdeliver/views/screens/homepage/provider/homepage_provider.dart';
 import 'package:alcoholdeliver/views/screens/homepage/widgets/category_card.dart';
@@ -40,11 +44,14 @@ class _HomepageScreenState extends State<HomepageScreen> {
   late HomepageProvider provider;
   late CartProvider _cartProvider;
 
+  late Timer _timer;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initOneSingle();
+      _timer = Timer.periodic(Duration(seconds: 15), (timer) => provider.listenUserLocation(context),);
       if (preferences.isUser) _cartProvider.getCart(context);
       if (preferences.isUser) provider.getMe(context);
       if (preferences.isUser) provider.getDefaultAddress();
@@ -55,12 +62,20 @@ class _HomepageScreenState extends State<HomepageScreen> {
     });
   }
 
+
+
   Future<void> initOneSingle() async {
     // await OneSignal.Notifications.requestPermission(true);
 
     final playerId = await OneSignal.User.getOnesignalId();
 
     if (playerId != null) provider.setPlayerId(playerId);
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 
   @override
@@ -73,36 +88,50 @@ class _HomepageScreenState extends State<HomepageScreen> {
 
           return HomepageBackground(
             useBackground: preferences.isUser,
-            child: Column(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: _kDefaultPadding,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBoxH5(),
-                        if (preferences.isUser) const HomepageHeader(),
-                        if (preferences.isDriver) const DriverHomepageHeader(),
-                        SizedBoxH30(),
-                        if (preferences.isUser)
-                          Flexible(
-                            fit: FlexFit.loose,
-                            child: ScrollableColumn(
-                              padding: EdgeInsets.zero,
-                              children: [
-                                UserHomescreen(provider: provider),
-                              ],
+            child: RefreshIndicator(
+              onRefresh: () {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (preferences.isUser) _cartProvider.getCart(context);
+                  if (preferences.isUser) provider.getMe(context);
+                  if (preferences.isUser) provider.getDefaultAddress();
+                  if (preferences.isUser) provider.getAllDeliveryOrders();
+                  if (preferences.isUser) provider.getAllCategories(context);
+                  if (preferences.isUser) provider.getAllFeatureProduct(context);
+                  if (preferences.isUser) provider.getSnippets();
+                });
+                return Future(() => true,);
+              },
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: _kDefaultPadding,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBoxH5(),
+                          if (preferences.isUser) const HomepageHeader(),
+                          if (preferences.isDriver) const DriverHomepageHeader(),
+                          SizedBoxH30(),
+                          if (preferences.isUser)
+                            Flexible(
+                              fit: FlexFit.loose,
+                              child: ScrollableColumn(
+                                padding: EdgeInsets.zero,
+                                children: [
+                                  UserHomescreen(provider: provider),
+                                ],
+                              ),
                             ),
-                          ),
-                        if (preferences.isDriver)
-                          const Flexible(
-                              fit: FlexFit.loose, child: DriverHomescreen()),
-                      ],
+                          if (preferences.isDriver)
+                            const Flexible(
+                                fit: FlexFit.loose, child: DriverHomescreen()),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
@@ -208,6 +237,7 @@ class _UserHomescreenState extends State<UserHomescreen> {
                     child: ListView.builder(
                       itemCount: widget.provider.featuredProducts.length,
                       shrinkWrap: true,
+                      primary: true,
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (BuildContext context, int index) {
                         final curData = widget.provider.featuredProducts[index];
@@ -232,6 +262,7 @@ class _UserHomescreenState extends State<UserHomescreen> {
                     itemCount: widget.provider.categories.length,
                     // itemCount: provider.categories.length > 4 ? 4 : provider.categories.length,
                     shrinkWrap: true,
+                    primary: true,
                     padding: EdgeInsets.zero,
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate:

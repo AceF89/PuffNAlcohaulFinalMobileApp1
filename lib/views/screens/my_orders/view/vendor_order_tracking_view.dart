@@ -25,7 +25,8 @@ class VendorOrderTrackingView extends StatefulWidget {
   const VendorOrderTrackingView({super.key, required this.order});
 
   @override
-  State<VendorOrderTrackingView> createState() => _VendorOrderTrackingViewState();
+  State<VendorOrderTrackingView> createState() =>
+      _VendorOrderTrackingViewState();
 }
 
 class _VendorOrderTrackingViewState extends State<VendorOrderTrackingView> {
@@ -37,6 +38,7 @@ class _VendorOrderTrackingViewState extends State<VendorOrderTrackingView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _provider.initListener(widget.order.firebaseItemId ?? '');
+      _dProvider.doorImage = null;
       _provider.setOrder(widget.order);
       _provider.getEstimatedTime(
         widget.order.originCoordinate,
@@ -62,16 +64,19 @@ class _VendorOrderTrackingViewState extends State<VendorOrderTrackingView> {
               child: _provider.isMapLoading
                   ? Loader.circularProgressIndicator()
                   : GoogleMapDirection(
-                      originCoordinates: _provider.originCoordinate ?? widget.order.originCoordinate,
+                      originCoordinates: _provider.originCoordinate ??
+                          widget.order.originCoordinate,
                       originName: '',
                       hideOriginMarker: _provider.isLocationAvailable,
-                      destinationCoordinates: widget.order.destinationCoordinate,
+                      destinationCoordinates:
+                          widget.order.destinationCoordinate,
                       destinationName: '',
                       externalMarkers: _provider.driverLocation,
                     ),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: PaddingValues.padding.h),
+              padding:
+                  EdgeInsets.symmetric(horizontal: PaddingValues.padding.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -95,9 +100,13 @@ class _VendorOrderTrackingViewState extends State<VendorOrderTrackingView> {
                             : _provider.deliveryEstimatedTime!,
                   ),
                   SizedBoxH20(),
-                  ColumnText(label: 'Delivery Type', value: widget.order.orderType ?? 'N/A'),
+                  ColumnText(
+                      label: 'Delivery Type',
+                      value: widget.order.orderType ?? 'N/A'),
                   SizedBoxH20(),
-                  ColumnText(label: 'Delivery Address', value: '#${widget.order.address ?? 'N/A'}'),
+                  ColumnText(
+                      label: 'Delivery Address',
+                      value: '#${widget.order.address ?? 'N/A'}'),
                   SizedBoxH20(),
 
                   /// Driver Information
@@ -108,7 +117,8 @@ class _VendorOrderTrackingViewState extends State<VendorOrderTrackingView> {
                     name: widget.order.placedByName ?? 'N/A',
                     type: 'Customer',
                     onTapChat: () {
-                      Navigator.of(context).pushNamed(Routes.chat, arguments: widget.order);
+                      Navigator.of(context)
+                          .pushNamed(Routes.chat, arguments: widget.order);
                     },
                   ),
                   SizedBoxH10(),
@@ -116,7 +126,9 @@ class _VendorOrderTrackingViewState extends State<VendorOrderTrackingView> {
                   SizedBoxH10(),
 
                   /// Order Details
-                  ColumnText(label: 'Order Details', value: widget.order.displayValues ?? 'N/A'),
+                  ColumnText(
+                      label: 'Order Details',
+                      value: widget.order.displayValues ?? 'N/A'),
                   Row(
                     children: [
                       Text(
@@ -132,7 +144,9 @@ class _VendorOrderTrackingViewState extends State<VendorOrderTrackingView> {
                   SizedBoxH20(),
 
                   /// Delivery Status
-                  ColumnText(label: 'Delivery Status', value: widget.order.status ?? 'N/A'),
+                  ColumnText(
+                      label: 'Delivery Status',
+                      value: widget.order.status ?? 'N/A'),
                   SizedBoxH20(),
 
                   /// Licence Pics
@@ -143,8 +157,8 @@ class _VendorOrderTrackingViewState extends State<VendorOrderTrackingView> {
                     children: [
                       LicenseCard(
                         onTap: () {
-                          Navigator.of(context)
-                              .pushNamed(Routes.filePreview, arguments: widget.order.fullFrontLicenseFileUrl);
+                          Navigator.of(context).pushNamed(Routes.filePreview,
+                              arguments: widget.order.fullFrontLicenseFileUrl);
                         },
                         label: 'Front Copy',
                         ignorePointer: false,
@@ -189,10 +203,13 @@ class _VendorOrderTrackingViewState extends State<VendorOrderTrackingView> {
                           showShadow: true,
                           onPressed: () async {
                             // ignore: use_build_context_synchronously
-                            final reason = await RejectReasonDialog.show(context, _dProvider.reasonController) ?? '';
+                            final reason = await RejectReasonDialog.show(
+                                    context, _dProvider.reasonController) ??
+                                '';
                             if (reason.isEmpty) {
                               // ignore: use_build_context_synchronously
-                              context.showFailureSnackBar('Reason is Mandatory');
+                              context
+                                  .showFailureSnackBar('Reason is Mandatory');
                               return;
                             }
 
@@ -217,20 +234,26 @@ class _VendorOrderTrackingViewState extends State<VendorOrderTrackingView> {
                           showShadow: true,
                           onPressed: () async {
                             if (_dProvider.doorImage == null) {
-                              context.showFailureSnackBar('Please select door image');
+                              context.showFailureSnackBar(
+                                  'Please select door image');
                               return;
                             }
 
-                            final fileRes = await _dProvider.uploadFile(context, _dProvider.doorImage);
+                            final fileRes = await _dProvider.uploadFile(
+                                context, _dProvider.doorImage);
                             if (fileRes == null) return;
 
                             final ouState =
                                 // ignore: use_build_context_synchronously
-                                await _dProvider.updateImageId(context, widget.order.copyWith(doorImageId: fileRes.id));
+                                await _dProvider.updateImageId(
+                                    context,
+                                    widget.order
+                                        .copyWith(doorImageId: fileRes.id));
                             if (!ouState) return;
 
                             // ignore: use_build_context_synchronously
-                            final status = await _dProvider.setOrderStatus(context, widget.order.id ?? 0, 'Delivered');
+                            final status = await _dProvider.setOrderStatus(
+                                context, widget.order.id ?? 0, 'Delivered');
                             if (!status) return;
 
                             // ignore: use_build_context_synchronously

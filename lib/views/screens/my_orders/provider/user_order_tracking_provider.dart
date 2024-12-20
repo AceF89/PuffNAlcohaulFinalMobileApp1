@@ -12,7 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-final AutoDisposeChangeNotifierProvider<UserOrderTrackingProvider> userOrderTrackingProvider =
+final AutoDisposeChangeNotifierProvider<UserOrderTrackingProvider>
+    userOrderTrackingProvider =
     ChangeNotifierProvider.autoDispose((ref) => UserOrderTrackingProvider());
 
 class UserOrderTrackingProvider extends DefaultChangeNotifier {
@@ -42,7 +43,9 @@ class UserOrderTrackingProvider extends DefaultChangeNotifier {
   bool get isLocationAvailable => driverLocation.isNotEmpty;
 
   LatLng? get originCoordinate {
-    return isLocationAvailable ? driverLocation.last.position : order?.originCoordinate;
+    return isLocationAvailable
+        ? driverLocation.last.position
+        : order?.originCoordinate;
   }
 
   LatLng? get destinationCoordinate {
@@ -76,11 +79,13 @@ class UserOrderTrackingProvider extends DefaultChangeNotifier {
       if (driverLocation != null) {
         final splitedValue = driverLocation.split(",");
         if (splitedValue.length == 2) {
-          final newPosition = LatLng(double.parse(splitedValue[0]), double.parse(splitedValue[1]));
+          final newPosition = LatLng(
+              double.parse(splitedValue[0]), double.parse(splitedValue[1]));
           _updateMarker(newPosition, useCar: true);
 
           if (order != null && order?.destinationCoordinate != null) {
-            getEstimatedTime(originCoordinate, destinationCoordinate, showLoader: false);
+            getEstimatedTime(originCoordinate, destinationCoordinate,
+                showLoader: false);
           }
         }
       }
@@ -90,7 +95,7 @@ class UserOrderTrackingProvider extends DefaultChangeNotifier {
 
     // Setup Listener
     tripsRef?.onChildChanged.listen((event) {
-      if (event.type == DatabaseEventType.childChanged) {
+      // if (event.type == DatabaseEventType.childChanged) {
         final documentKey = event.snapshot.key;
         if (documentKey != "DriverLocation") return;
 
@@ -99,13 +104,15 @@ class UserOrderTrackingProvider extends DefaultChangeNotifier {
 
         final splitedValue = value.split(",");
         if (splitedValue.length != 2) return;
-        final newPosition = LatLng(double.parse(splitedValue[0]), double.parse(splitedValue[1]));
+        final newPosition = LatLng(
+            double.parse(splitedValue[0]), double.parse(splitedValue[1]));
         _updateMarker(newPosition, useCar: true);
 
         if (order != null && order?.destinationCoordinate != null) {
-          getEstimatedTime(originCoordinate, destinationCoordinate, showLoader: false);
+          getEstimatedTime(originCoordinate, destinationCoordinate,
+              showLoader: false);
         }
-      }
+      // }
     });
   }
 
@@ -117,11 +124,14 @@ class UserOrderTrackingProvider extends DefaultChangeNotifier {
   }
 
   void _updateMarker(LatLng position, {bool useCar = false}) {
+    print("driver position ==> ${position.latitude} -> ${position.longitude}");
     driverLocation.clear();
     driverLocation.add(Marker(
       markerId: const MarkerId('Driver'),
       position: position,
-      icon: useCar ? customMarker ?? BitmapDescriptor.defaultMarker : BitmapDescriptor.defaultMarker,
+      icon: useCar
+          ? customMarker ?? BitmapDescriptor.defaultMarker
+          : BitmapDescriptor.defaultMarker,
     ));
     notify();
   }
@@ -149,10 +159,12 @@ class UserOrderTrackingProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future<void> getEstimatedTime(LatLng? orgin, LatLng? destination, {bool showLoader = true}) async {
+  Future<void> getEstimatedTime(LatLng? orgin, LatLng? destination,
+      {bool showLoader = true}) async {
     final now = DateTime.now();
 
-    if (_lastEstimatedTimeCall != null && now.difference(_lastEstimatedTimeCall!).inMinutes < 1) {
+    if (_lastEstimatedTimeCall != null &&
+        now.difference(_lastEstimatedTimeCall!).inMinutes < 1) {
       return;
     }
 
@@ -169,7 +181,8 @@ class UserOrderTrackingProvider extends DefaultChangeNotifier {
       if (showLoader) deliveryEstimatedTime = null;
       if (showLoader) setEstimatedLoading = true;
 
-      var result = await _googleMapApi.getEstimatedTime(origin: orgin, destination: destination);
+      var result = await _googleMapApi.getEstimatedTime(
+          origin: orgin, destination: destination);
 
       return result.when(
         (value) async {

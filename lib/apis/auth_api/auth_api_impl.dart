@@ -123,4 +123,27 @@ class _AuthApiImpl extends AuthApiService {
       (error) => Failure(error),
     );
   }
+
+  @override
+  Future<Result<String, String>> verifyOTP({
+    String? email,
+    String? code,
+  }) async {
+    String endpoint = '/User//api/User/VerifyOtp';
+    if (email != null && code != null) {
+      endpoint +=
+          '?email=${email.trim()}&otp=${code.trim()}';
+    }
+
+    var result = await request(requestType: RequestType.get, path: endpoint);
+
+    return result.when(
+      (response) {
+        return response['statusCode'] == 200
+            ? Success(response['message'])
+            : Failure(response['message']);
+      },
+      (error) => Failure(error),
+    );
+  }
 }

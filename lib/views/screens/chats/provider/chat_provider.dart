@@ -63,7 +63,11 @@ class ChatProvider extends DefaultChangeNotifier {
     );
   }
 
-  void handleOnSendMessage() {
+  void handleOnSendMessage(context) {
+    if(chatController.text.trim().isEmpty) {
+      context.showSuccessSnackBar('Please enter a message');
+      return;
+    }
     wsService.sendMessageOnChannel(
       message: chatController.text.trim(),
       roomID: currentChatOrder?.rcChannelId ?? '',

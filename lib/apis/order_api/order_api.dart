@@ -6,6 +6,7 @@ import 'package:alcoholdeliver/services/client/client_service.dart';
 import 'package:alcoholdeliver/services/client/result.dart';
 import 'package:background_locator_2/location_dto.dart';
 import 'package:dio/dio.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 part 'order_api_impl.dart';
@@ -45,4 +46,6 @@ abstract class OrderApi {
   Future<Result<String, String>> applyLoyaltyPoints({required num orderId, required num points});
 
   Future<Result<String, String>> updateDriverLocation({required LocationDto location});
+
+  Future<Result<String, String>> updateDriverLocationFormLatLong({required LatLng location});
 }

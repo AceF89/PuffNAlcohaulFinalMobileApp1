@@ -19,6 +19,20 @@ class _UserApiImpl extends UserApiService {
   }
 
   @override
+  Future<Result<String, String>> pingUser({required double lat,required double long}) async {
+    var result = await request(requestType: RequestType.post, path: '/User/Ping?lat=$lat&log=$long');
+    return result.when(
+          (response) {
+        if (response['statusCode'] == 200) {
+          return Success(response['message']);
+        }
+        return Failure(response['message']);
+      },
+          (error) => Failure(error),
+    );
+  }
+
+  @override
   Future<Result<UserDetails, String>> updateMe({
     required num? id,
     required num? roleId,
@@ -182,6 +196,27 @@ class _UserApiImpl extends UserApiService {
       data: address.toSaveJson(),
     );
 
+    return result.when(
+      (response) {
+        if (response['statusCode'] == 200) {
+          return Success(response['message']);
+        }
+        return Failure(response['message']);
+      },
+      (error) => Failure(error),
+    );
+  }
+
+  @override
+  Future<Result<String, String>> setUserAddress(
+      {required Map<String, dynamic> address}) async {
+    String url = '/User/SetUserAddress';
+
+    var result = await request(
+      requestType: RequestType.post,
+      path: url,
+      data: address,
+    );
     return result.when(
       (response) {
         if (response['statusCode'] == 200) {

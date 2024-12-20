@@ -85,7 +85,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
             /// Chat Keyboard
             ChatBottomBar(
-              onTap: _provider.handleOnSendMessage,
+              onTap: () => _provider.handleOnSendMessage(context),
               controller: _provider.chatController,
             ),
           ],

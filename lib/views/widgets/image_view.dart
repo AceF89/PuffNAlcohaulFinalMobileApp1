@@ -26,11 +26,12 @@ class ImageView extends StatelessWidget {
       imageBuilder: (context, image) {
         return Container(
           decoration: BoxDecoration(
-            color: Colors.grey.shade200,
+            // color: Colors.grey.shade200,
+            color: Colors.white,
             borderRadius: radius,
             image: DecorationImage(
               image: image,
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
               filterQuality: FilterQuality.high,
             ),
           ),

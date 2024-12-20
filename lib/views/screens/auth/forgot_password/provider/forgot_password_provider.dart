@@ -79,13 +79,48 @@ class ForgotPasswordProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future<bool> verifyOtp(BuildContext context) async {
-    if (!(verifyOtpFormKey.currentState?.validate() ?? false)) {
+  // Future<bool> verifyOtp(BuildContext context) async {
+  //   if (!(verifyOtpFormKey.currentState?.validate() ?? false)) {
+  //     verifyOTP(context);
+  //   }
+  //
+  //   return true;
+  // }
+  Future<bool> verifyOTP(BuildContext context) async {
+    // if (verifyOtpFormKey.currentState!.validate()) {
+    //   return false;
+    // }
+    if(otpController.text.isEmpty) {
+      context.showFailureSnackBar('OTP is required');
       return false;
     }
+    if (await ConnectivityService.isConnected) {
+      // ignore: use_build_context_synchronously
+      Loader.show(context);
 
-    return true;
+      var result = await _api.verifyOTP(
+        email: emailController.text,
+        code: otpController.text,
+      );
+
+      return result.when(
+            (value) async {
+          Loader.dismiss(context);
+          return true;
+        },
+            (error) {
+          Loader.dismiss(context);
+          context.showFailureSnackBar(error);
+          return false;
+        },
+      );
+    } else {
+      // ignore: use_build_context_synchronously
+      context.showFailureSnackBar(kNoInternet);
+      return false;
+    }
   }
+
 
   Future<bool> updateNewPassword(BuildContext context) async {
     if (!(newPasswordFormKey.currentState?.validate() ?? false)) {

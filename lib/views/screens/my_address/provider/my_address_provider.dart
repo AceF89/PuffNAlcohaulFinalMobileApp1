@@ -121,7 +121,7 @@ class MyAddressProvider extends DefaultChangeNotifier {
 
       var result = await _userApi.addNewAddress(
           address: address.copyWith(isDefault: true));
-
+      await setUserAddress(context, address.id.toString());
       getMe();
 
       return result.when(
@@ -129,6 +129,31 @@ class MyAddressProvider extends DefaultChangeNotifier {
           Loader.dismiss(context);
           _updateDefaultAddress(address.id);
           context.showSuccessSnackBar('Default address changed');
+          return true;
+        },
+        (error) {
+          Loader.dismiss(context);
+          context.showFailureSnackBar(error);
+          return false;
+        },
+      );
+    } else {
+      // ignore: use_build_context_synchronously
+      context.showFailureSnackBar(kNoInternet);
+      return false;
+    }
+  }
+
+  Future<bool> setUserAddress(BuildContext context, String addressId) async {
+    if (await ConnectivityService.isConnected) {
+      // ignore: use_build_context_synchronously
+      Loader.show(context);
+
+      var result =
+          await _userApi.setUserAddress(address: {"addressId": addressId});
+      return result.when(
+        (value) async {
+          Loader.dismiss(context);
           return true;
         },
         (error) {

@@ -5,6 +5,7 @@ import 'package:alcoholdeliver/apis/snippet_api/snippet_api.dart';
 import 'package:alcoholdeliver/apis/user_api/user_api.dart';
 import 'package:alcoholdeliver/core/constants/constants.dart';
 import 'package:alcoholdeliver/core/helpers/extensions.dart';
+import 'package:alcoholdeliver/model/google/location_result.dart';
 import 'package:alcoholdeliver/model/order.dart';
 import 'package:alcoholdeliver/model/product.dart';
 import 'package:alcoholdeliver/model/product_categories.dart';
@@ -12,6 +13,7 @@ import 'package:alcoholdeliver/model/snippets.dart';
 import 'package:alcoholdeliver/model/user_address.dart';
 import 'package:alcoholdeliver/providers/default_change_notifier.dart';
 import 'package:alcoholdeliver/services/connectivity_service.dart';
+import 'package:alcoholdeliver/services/location/location_service.dart';
 import 'package:alcoholdeliver/views/widgets/loader.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +28,7 @@ class HomepageProvider extends DefaultChangeNotifier {
   final SnippetApi _snippetApi = SnippetApi.instance;
   final ProductApi _productApi = ProductApi.instance;
   final CategoriesApi _categoriesApi = CategoriesApi.instance;
-
+  LocationResult? value;
   List<ProductCategories> categories = [];
   UserAddress? defaultAddress;
 
@@ -49,6 +51,11 @@ class HomepageProvider extends DefaultChangeNotifier {
     orders.clear();
     getAllDeliveryOrders();
     notify();
+  }
+
+  listenUserLocation(context) async {
+    value = await LocationService.getCurrentLocation();
+    pingUser(lat: value?.latitude ?? 0.0, long: value?.longitude ?? 0.0, context: context);
   }
 
   HomepageProvider();
@@ -112,6 +119,15 @@ class HomepageProvider extends DefaultChangeNotifier {
         },
         (error) => context.showFailureSnackBar(error),
       );
+    } else {
+      // ignore: use_build_context_synchronously
+      context.showFailureSnackBar(kNoInternet);
+    }
+  }
+
+  Future<void> pingUser({required double lat, required double long,required BuildContext context}) async {
+    if (await ConnectivityService.isConnected) {
+      await _userApi.pingUser(lat: lat, long: long);
     } else {
       // ignore: use_build_context_synchronously
       context.showFailureSnackBar(kNoInternet);

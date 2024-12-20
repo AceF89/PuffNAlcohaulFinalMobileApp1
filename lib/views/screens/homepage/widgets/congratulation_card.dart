@@ -63,7 +63,7 @@ class CongratulationCard extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: AppFontFamily.abrilFatface,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.primaryColor,
+                    color: Color(0xFFEA700C),
                     fontSize: Sizes.s18.sp,
                   ),
                 ),

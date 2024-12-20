@@ -1,5 +1,6 @@
 import 'package:alcoholdeliver/views/screens/auth/widgets/auth_header.dart';
 import 'package:alcoholdeliver/views/widgets/app_background.dart';
+import 'package:alcoholdeliver/views/widgets/loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -73,21 +74,34 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
                         showShadow: true,
                         onPressed: () async {
                           final status =
-                              await _forgotPasswordProvider.verifyOtp(context);
-                          if (!status) return;
+                              await _forgotPasswordProvider.verifyOTP(context);
+                          // if (!status) return;
 
                           // ignore: use_build_context_synchronously
-                          Navigator.of(context).pushNamed(
-                            Routes.forgotPasswordNewPassword,
-                          );
+                          // Navigator.of(context).pushNamed(
+                          //   Routes.forgotPasswordNewPassword,
+                          // );
                         }),
-                    SizedBoxH50(),
-                    SizedBoxH50(),
+                    SizedBoxH30(),
+                    Text(
+                      'Please check your spam folder as well if you don’t receive an email.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: Sizes.s14.sp,
+                        color: AppColors.secondaryFontColor,
+                      ),
+                    ),
+                    SizedBoxH30(),
                     PrimaryTextButton(
                       label: 'Resend OTP',
                       onPressed: () {},
                     ),
-                    SizedBoxH50(),
+                    SizedBoxH20(),
+                    PrimaryButton.outlined(
+                      label: 'Back To Sign In',
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    SizedBoxH25(),
                   ],
                 ),
               ),

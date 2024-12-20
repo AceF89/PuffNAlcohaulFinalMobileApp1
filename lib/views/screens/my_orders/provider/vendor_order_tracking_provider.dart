@@ -58,9 +58,9 @@ class VendorOrderTrackingProvider extends DefaultChangeNotifier {
   void initListener(String firebaseId) async {
     setMapLoading = true;
     await createCustomMarker();
-
+    setMapLoading = false;
     if (firebaseId.isEmpty) return;
-
+    setMapLoading = true;
     tripsRef = FirebaseDatabase.instance.ref('Trips/$firebaseId');
 
     // Initial Read

@@ -17,6 +17,8 @@ abstract class UserApi {
 
   Future<Result<UserDetails, String>> getMe();
 
+  Future<Result<String, String>> pingUser({required double lat,required double long});
+
   Future<Result<UserDetails, String>> updateMe({
     required num? id,
     required num? roleId,
@@ -47,6 +49,8 @@ abstract class UserApi {
   Future<Result<List<UserAddress>, String>> getAllAddress({bool? defaultAddress});
 
   Future<Result<String, String>> addNewAddress({required UserAddress address});
+
+  Future<Result<String, String>> setUserAddress({required Map<String, dynamic> address});
 
   Future<Result<String, String>> deleteSavedAddress({required num id});
 }

@@ -140,6 +140,34 @@ class _OrderApiImpl extends OrderApiService {
       (error) => Failure(error),
     );
   }
+  @override
+  Future<Result<String, String>> updateDriverLocationFormLatLong({required LatLng location}) async {
+    String url = '/Order/UpdateDriverLocation';
+    url += '?driverLatitude=${location.latitude}&driverLongitude=${location.longitude}';
+
+    Preferences.shared = await SharedPreferences.getInstance();
+    String? token = preferences.getUserProfile()?.token;
+
+    var result = await request(
+      requestType: RequestType.post,
+      path: url,
+      headers: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      ),
+    );
+
+    return result.when(
+      (response) {
+        if (response['statusCode'] == 200) {
+          return Success(response['message']);
+        }
+        return Failure(response['message']);
+      },
+      (error) => Failure(error),
+    );
+  }
 
   @override
   Future<Result<String, String>> saveOrder({required Order item}) async {

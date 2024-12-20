@@ -9,7 +9,8 @@ import 'package:flutter/material.dart';
 class BackgroundLocatorRepository {
   int count = -1;
   static const String isolateName = 'LocatorIsolate';
-  static final BackgroundLocatorRepository _instance = BackgroundLocatorRepository._();
+  static final BackgroundLocatorRepository _instance =
+      BackgroundLocatorRepository._();
 
   BackgroundLocatorRepository._();
 
