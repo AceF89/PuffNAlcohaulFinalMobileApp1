@@ -3,6 +3,7 @@ import 'dart:isolate';
 import 'dart:math';
 import 'dart:ui';
 import 'package:alcoholdeliver/apis/order_api/order_api.dart';
+import 'package:alcoholdeliver/apis/user_api/user_api.dart';
 import 'package:background_locator_2/location_dto.dart';
 import 'package:flutter/material.dart';
 
@@ -35,8 +36,10 @@ class BackgroundLocatorRepository {
   }
 
   Future<void> updateLocation(LocationDto location) async {
+    if (location.latitude == 0 || location.longitude == 0) return;
     final OrderApi api = OrderApi.instance;
     await api.updateDriverLocation(location: location);
+    UserApi.instance.pingUser(lat: location.latitude, long: location.longitude);
   }
 
   void _sendToIsolate(dynamic message) {

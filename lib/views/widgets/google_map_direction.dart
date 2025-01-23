@@ -67,7 +67,13 @@ class _GoogleMapDirectionState extends State<GoogleMapDirection> {
   void _buildMarkers() {
     setState(() {
       _markers.clear();
+      
+      // Add external markers first if they exist
+      if (widget.externalMarkers != null) {
+        _markers.addAll(widget.externalMarkers!);
+      }
 
+      // Then add origin and destination markers
       if (widget.originCoordinates != null &&
           widget.destinationCoordinates != null) {
         _markers.addAll([
@@ -83,13 +89,45 @@ class _GoogleMapDirectionState extends State<GoogleMapDirection> {
             infoWindow: InfoWindow(title: widget.destinationName),
           ),
         ]);
+
+        // Update camera to show all markers
+        _updateCameraToFitMarkers();
       }
 
-      if (widget.externalMarkers != null) {
-        _markers.addAll(widget.externalMarkers!);
+      // Move this outside of the external markers check
+      if (widget.originCoordinates != null && 
+          widget.destinationCoordinates != null) {
         _fetchAndSetPolylines();
       }
     });
+  }
+
+  void _updateCameraToFitMarkers() {
+    if (_googleMapController == null || _markers.isEmpty) return;
+
+    // Calculate bounds that include all markers
+    double minLat = double.infinity;
+    double maxLat = -double.infinity;
+    double minLng = double.infinity;
+    double maxLng = -double.infinity;
+
+    for (Marker marker in _markers) {
+      if (marker.position.latitude < minLat) minLat = marker.position.latitude;
+      if (marker.position.latitude > maxLat) maxLat = marker.position.latitude;
+      if (marker.position.longitude < minLng) minLng = marker.position.longitude;
+      if (marker.position.longitude > maxLng) maxLng = marker.position.longitude;
+    }
+
+    // Add some padding to the bounds
+    final bounds = LatLngBounds(
+      southwest: LatLng(minLat - 0.01, minLng - 0.01),
+      northeast: LatLng(maxLat + 0.01, maxLng + 0.01),
+    );
+
+    // Animate camera to show all markers
+    _googleMapController?.animateCamera(
+      CameraUpdate.newLatLngBounds(bounds, 50.0),
+    );
   }
 
   Future<void> _fetchAndSetPolylines() async {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:isolate';
 import 'dart:ui';
 import 'package:alcoholdeliver/core/constants/constants.dart';
@@ -7,6 +8,7 @@ import 'package:alcoholdeliver/services/location/background_locator_repository.d
 import 'package:alcoholdeliver/services/location/location_service.dart';
 import 'package:alcoholdeliver/views/screens/accounts/view/accounts_screen.dart';
 import 'package:alcoholdeliver/views/screens/accounts/view/driver_account_screen.dart';
+import 'package:alcoholdeliver/views/screens/homepage/provider/homepage_provider.dart';
 import 'package:alcoholdeliver/views/screens/homepage/view/homepage_screen.dart';
 import 'package:alcoholdeliver/views/screens/my_orders/view/my_orders_screen.dart';
 import 'package:alcoholdeliver/views/screens/no_location_screen/no_location_screen.dart';
@@ -23,70 +25,7 @@ late ValueNotifier<NavigationTab> bottomTabNotifier;
 class MainHome extends StatefulWidget {
   const MainHome({super.key});
 
-  @override
-  State<MainHome> createState() => _MainHomeState();
-}
-
-class _MainHomeState extends State<MainHome> {
-  ReceivePort port = ReceivePort();
-  Stream<gl.ServiceStatus>? _serviceStatusStream;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  @override
-  void initState() {
-    super.initState();
-    bottomTabNotifier = ValueNotifier(NavigationTab.home);
-
-    if (IsolateNameServer.lookupPortByName(BackgroundLocatorRepository.isolateName) != null) {
-      IsolateNameServer.removePortNameMapping(BackgroundLocatorRepository.isolateName);
-    }
-
-    IsolateNameServer.registerPortWithName(port.sendPort, BackgroundLocatorRepository.isolateName);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (preferences.isDriver) {
-        _serviceStatusStream = LocationService.getServiceStatusStream;
-        _checkInitalLocationStatus();
-        _setupLocationListner();
-      } else {
-        _cleanOldBGLocationListener();
-      }
-    });
-  }
-
-  void _cleanOldBGLocationListener() async {
-    await BackgroundLocator.unRegisterLocationUpdate();
-  }
-
-  void _checkInitalLocationStatus() async {
-    await LocationService.checkPermission(requestPermission: true);
-    final status = await LocationService.checkServiceStatus;
-    status ? _startBgLocator() : _showLocationAlert();
-  }
-
-  void _setupLocationListner() {
-    _serviceStatusStream?.listen((gl.ServiceStatus status) {
-      if (status == gl.ServiceStatus.disabled) {
-        _showLocationAlert();
-        _cleanOldBGLocationListener();
-      }
-
-      if (status == gl.ServiceStatus.enabled) {
-        _hideLocationAlert();
-        _startBgLocator();
-      }
-    });
-  }
-
-  void _showLocationAlert() {
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) => const NoLocationScreen()));
-  }
-
-  void _hideLocationAlert() {
-    if (Navigator.canPop(context)) Navigator.pop(context);
-  }
-
-  Future<void> _startBgLocator() async {
+  Future<void> startBgLocator() async {
     DartPluginRegistrant.ensureInitialized();
 
     await LocationService.checkPermission(requestPermission: true);
@@ -117,7 +56,7 @@ class _MainHomeState extends State<MainHome> {
           notificationTitle: 'Location Tracking',
           notificationMsg: 'Track location in background',
           notificationBigMsg:
-              'Background location is on to keep the app up-tp-date with your location. This is required for main features to work properly when the app is not running.',
+          'Background location is on to keep the app up-tp-date with your location. This is required for main features to work properly when the app is not running.',
           notificationIconColor: Colors.grey,
           notificationIcon: '@mipmap/launcher_icon',
           notificationTapCallback: BackgroundLocatorCallabacks.notificationCallback,
@@ -135,6 +74,76 @@ class _MainHomeState extends State<MainHome> {
       );
     }
   }
+
+  @override
+  State<MainHome> createState() => _MainHomeState();
+}
+
+class _MainHomeState extends State<MainHome> {
+  ReceivePort port = ReceivePort();
+  Stream<gl.ServiceStatus>? _serviceStatusStream;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  HomepageProvider provider = HomepageProvider();
+  late Timer _timer;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      provider.listenUserLocation(context);
+      _timer = Timer.periodic(const Duration(seconds: 3), (timer) =>
+          provider.listenUserLocation(context),);
+    });
+    bottomTabNotifier = ValueNotifier(NavigationTab.home);
+
+    if (IsolateNameServer.lookupPortByName(BackgroundLocatorRepository.isolateName) != null) {
+      IsolateNameServer.removePortNameMapping(BackgroundLocatorRepository.isolateName);
+    }
+
+    IsolateNameServer.registerPortWithName(port.sendPort, BackgroundLocatorRepository.isolateName);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (preferences.isDriver) {
+        _serviceStatusStream = LocationService.getServiceStatusStream;
+        _checkInitalLocationStatus();
+        _setupLocationListner();
+      } else {
+        _cleanOldBGLocationListener();
+      }
+    });
+  }
+
+  void _cleanOldBGLocationListener() async {
+    await BackgroundLocator.unRegisterLocationUpdate();
+  }
+
+  void _checkInitalLocationStatus() async {
+    await LocationService.checkPermission(requestPermission: true);
+    final status = await LocationService.checkServiceStatus;
+    status ? widget.startBgLocator() : _showLocationAlert();
+  }
+
+  void _setupLocationListner() {
+    _serviceStatusStream?.listen((gl.ServiceStatus status) {
+      if (status == gl.ServiceStatus.disabled) {
+        _showLocationAlert();
+        _cleanOldBGLocationListener();
+      }
+
+      if (status == gl.ServiceStatus.enabled) {
+        _hideLocationAlert();
+        widget.startBgLocator();
+      }
+    });
+  }
+
+  void _showLocationAlert() {
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => const NoLocationScreen()));
+  }
+
+  void _hideLocationAlert() {
+    if (Navigator.canPop(context)) Navigator.pop(context);
+  }
+
 
   @override
   void dispose() {

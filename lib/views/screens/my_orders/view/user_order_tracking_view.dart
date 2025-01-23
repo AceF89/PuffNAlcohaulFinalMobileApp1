@@ -1,3 +1,4 @@
+import 'package:alcoholdeliver/core/constants/app_assets.dart';
 import 'package:alcoholdeliver/core/constants/app_colors.dart';
 import 'package:alcoholdeliver/core/constants/app_sizes.dart';
 import 'package:alcoholdeliver/core/constants/constants.dart';
@@ -16,7 +17,9 @@ import 'package:alcoholdeliver/views/widgets/scrollable_column.dart';
 import 'package:alcoholdeliver/views/widgets/sized_boxes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:async';
 
 class UserOrderTrackingView extends StatefulWidget {
   final Order order;
@@ -29,20 +32,30 @@ class UserOrderTrackingView extends StatefulWidget {
 
 class _UserOrderTrackingViewState extends State<UserOrderTrackingView> {
   late UserOrderTrackingProvider provider;
+  Timer? _timer;
+
+  void refreshMap(bool showLoader) {
+    provider.getOrder(context, widget.order.id ?? 0, showLoader);
+    provider.initListener(widget.order.firebaseItemId ?? '', showLoader);
+  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      provider.getOrder(context, widget.order.id ?? 0);
-      provider.initListener(widget.order.firebaseItemId ?? '');
-      provider.getEstimatedTime(
-          widget.order.originCoordinate, widget.order.destinationCoordinate);
+      refreshMap(true);
+      
+      _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+        if (mounted) {
+          refreshMap(false);
+        }
+      });
     });
   }
 
   @override
   void dispose() {
+    _timer?.cancel();
     provider.cDispose();
     provider.dispose();
     super.dispose();
@@ -80,13 +93,43 @@ class _UserOrderTrackingViewState extends State<UserOrderTrackingView> {
                 children: [
                   /// Traking Informations
                   SizedBoxH20(),
-                  Text(
-                    'Tracking Details',
-                    style: TextStyle(
-                      color: AppColors.primaryFontColor,
-                      fontWeight: FontWeight.w500,
-                      fontSize: Sizes.s20.sp,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Tracking Details',
+                        style: TextStyle(
+                          color: AppColors.primaryFontColor,
+                          fontWeight: FontWeight.w500,
+                          fontSize: Sizes.s20.sp,
+                        ),
+                      ),
+                      // Refresh button set in container with refresh icon and text
+                      InkWell(
+                        onTap: () => refreshMap(true),
+                        child: Container(
+                          padding: EdgeInsets.all(Sizes.s10.w),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor,
+                            borderRadius: BorderRadius.circular(Sizes.s10.w),
+                          ),
+                          child: Row(
+                            children: [
+                              SvgPicture.asset(AppAssets.icReload, width: Sizes.s20.w),
+                              SizedBoxW05(),
+                              Text(
+                                'Refresh',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: Sizes.s14.sp,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBoxH20(),
                   ColumnText(

@@ -5,6 +5,8 @@ import 'package:alcoholdeliver/core/constants/constants.dart';
 import 'package:alcoholdeliver/services/client/interceptor.dart';
 import 'package:alcoholdeliver/services/client/result.dart';
 import 'package:alcoholdeliver/services/connectivity_service.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 bool _kEnabledLogs = kDebugMode && true;
 
@@ -99,6 +101,14 @@ class ClientService {
         //   'optinos': jsonEncode(headers.toString()),
         //   'url': url,
         // }, level: 'API Call');
+        Fluttertoast.showToast(
+          msg: kNoInternet,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
         return Failure(kNoInternet);
       }
     } on DioError catch (e, _) {

@@ -20,7 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final ChangeNotifierProvider<HomepageProvider> homepageProvider =
-    ChangeNotifierProvider((ref) => HomepageProvider());
+ChangeNotifierProvider((ref) => HomepageProvider());
 
 class HomepageProvider extends DefaultChangeNotifier {
   final UserApi _userApi = UserApi.instance;
@@ -28,7 +28,7 @@ class HomepageProvider extends DefaultChangeNotifier {
   final SnippetApi _snippetApi = SnippetApi.instance;
   final ProductApi _productApi = ProductApi.instance;
   final CategoriesApi _categoriesApi = CategoriesApi.instance;
-  LocationResult? value;
+  LocationResult? userLocationValue;
   List<ProductCategories> categories = [];
   UserAddress? defaultAddress;
 
@@ -54,8 +54,15 @@ class HomepageProvider extends DefaultChangeNotifier {
   }
 
   listenUserLocation(context) async {
-    value = await LocationService.getCurrentLocation();
-    pingUser(lat: value?.latitude ?? 0.0, long: value?.longitude ?? 0.0, context: context);
+    try {
+      userLocationValue = await LocationService.getCurrentLocation();
+      print("value?.latitude ===> ${userLocationValue?.latitude}");
+      print("value?.longitude ===> ${userLocationValue?.longitude}");
+      pingUser(lat: userLocationValue?.latitude ?? 0.0, long: userLocationValue?.longitude ?? 0.0, context: context);
+      notify();
+    } catch (e) {
+      print("Error ===> $e");
+    }
   }
 
   HomepageProvider();
@@ -111,13 +118,13 @@ class HomepageProvider extends DefaultChangeNotifier {
       var result = await _userApi.getMe();
 
       return result.when(
-        (value) async {
+            (value) async {
           final oldUser = preferences.getUserProfile();
           final updatedProfile = value.copyWith(token: oldUser?.token);
           preferences.userProfile = updatedProfile;
           notify();
         },
-        (error) => context.showFailureSnackBar(error),
+            (error) => context.showFailureSnackBar(error),
       );
     } else {
       // ignore: use_build_context_synchronously
@@ -144,14 +151,14 @@ class HomepageProvider extends DefaultChangeNotifier {
       var result = await _userApi.getAllAddress(defaultAddress: true);
 
       return result.when(
-        (value) async {
+            (value) async {
           if (value.isNotEmpty) {
             defaultAddress = value.first;
           }
           notify();
           if (context != null) Loader.dismiss(context);
         },
-        (error) {
+            (error) {
           if (context != null) Loader.dismiss(context);
           if (context != null) context.showFailureSnackBar(error);
         },
@@ -181,12 +188,12 @@ class HomepageProvider extends DefaultChangeNotifier {
       );
 
       return result.when(
-        (value) async {
+            (value) async {
           _totalResult = value.totalData;
           if (!isLoadMore) orders = value.data ?? [];
           return value.data ?? [];
         },
-        (error) {
+            (error) {
           orders = [];
           return [];
         },
@@ -206,7 +213,7 @@ class HomepageProvider extends DefaultChangeNotifier {
     );
 
     return result.when(
-      (value) async {
+          (value) async {
         final newOrders = value.data ?? [];
         orders = newOrders;
         // for (final newOrder in newOrders) {
@@ -227,7 +234,7 @@ class HomepageProvider extends DefaultChangeNotifier {
         // }
         notify();
       },
-      (error) => {},
+          (error) => {},
     );
   }
 
@@ -239,12 +246,12 @@ class HomepageProvider extends DefaultChangeNotifier {
       );
 
       return result.when(
-        (value) async {
+            (value) async {
           categories = value;
           loading = false;
           notify();
         },
-        (error) {
+            (error) {
           loading = false;
           context.showFailureSnackBar(error);
         },
@@ -263,11 +270,11 @@ class HomepageProvider extends DefaultChangeNotifier {
       );
 
       return result.when(
-        (value) async {
+            (value) async {
           snippets = value;
           notify();
         },
-        (error) {},
+            (error) {},
       );
     }
   }
@@ -281,12 +288,12 @@ class HomepageProvider extends DefaultChangeNotifier {
       );
 
       return result.when(
-        (value) async {
+            (value) async {
           featuredProducts = value.data ?? [];
           toggleFeatureLoading = false;
           notify();
         },
-        (error) {
+            (error) {
           toggleFeatureLoading = false;
           context.showFailureSnackBar(error);
         },
@@ -317,12 +324,12 @@ class HomepageProvider extends DefaultChangeNotifier {
       );
 
       return result.when(
-        (value) async {
+            (value) async {
           Loader.dismiss(context);
           context.showSuccessSnackBar('Status updated successfully');
           return true;
         },
-        (error) {
+            (error) {
           Loader.dismiss(context);
           context.showFailureSnackBar(error);
           return false;

@@ -62,58 +62,68 @@ class UserOrderTrackingProvider extends DefaultChangeNotifier {
     notify();
   }
 
-  void initListener(String firebaseId) async {
-    setMapLoading = true;
-    await createCustomMarker();
+  void initListener(String firebaseId, bool showLoader) async {
+    try {
+      if (showLoader) setMapLoading = true;
+      await createCustomMarker();
 
-    if (firebaseId.isEmpty) return;
-
-    tripsRef = FirebaseDatabase.instance.ref('Trips/$firebaseId');
-
-    // Initial Read
-    final snapshot = await tripsRef!.get();
-    if (snapshot.exists) {
-      final data = snapshot.value as Map<dynamic, dynamic>;
-
-      final driverLocation = data['DriverLocation'] as String?;
-      if (driverLocation != null) {
-        final splitedValue = driverLocation.split(",");
-        if (splitedValue.length == 2) {
-          final newPosition = LatLng(
-              double.parse(splitedValue[0]), double.parse(splitedValue[1]));
-          _updateMarker(newPosition, useCar: true);
-
-          if (order != null && order?.destinationCoordinate != null) {
-            getEstimatedTime(originCoordinate, destinationCoordinate,
-                showLoader: false);
-          }
-        }
-      }
-    }
-
-    setMapLoading = false;
-
-    // Setup Listener
-    tripsRef?.onChildChanged.listen((event) {
-      // if (event.type == DatabaseEventType.childChanged) {
-        final documentKey = event.snapshot.key;
-        if (documentKey != "DriverLocation") return;
-
-        final value = event.snapshot.value as String?;
-        if (value == null) return;
-
-        final splitedValue = value.split(",");
-        if (splitedValue.length != 2) return;
-        final newPosition = LatLng(
-            double.parse(splitedValue[0]), double.parse(splitedValue[1]));
-        _updateMarker(newPosition, useCar: true);
-
-        if (order != null && order?.destinationCoordinate != null) {
-          getEstimatedTime(originCoordinate, destinationCoordinate,
-              showLoader: false);
-        }
+      // if (firebaseId.isEmpty) {
+      //   setMapLoading = false;
+      //   return;
       // }
-    });
+
+      // tripsRef = FirebaseDatabase.instance.ref('Trips/$firebaseId');
+
+      // // Initial Read
+      // final snapshot = await tripsRef!.get();
+      // if (snapshot.exists) {
+      //   final data = snapshot.value as Map<dynamic, dynamic>;
+      //
+      //   final driverLocation = data['DriverLocation'] as String?;
+      //   if (driverLocation != null) {
+      //     final splitedValue = driverLocation.split(",");
+      //     if (splitedValue.length == 2) {
+      //       final newPosition = LatLng(
+      //           double.parse(splitedValue[0]), double.parse(splitedValue[1]));
+      //       _updateMarker(newPosition, useCar: true);
+      //
+      //       if (order != null && order?.estimateTime != null) {
+      //         deliveryEstimatedTime =  order?.estimateTime;
+      //       }
+      //     }
+      //   }
+      // }
+      //
+      // setMapLoading = false;
+      //
+      // // Setup Listener
+      // tripsRef?.onChildChanged.listen((event) {
+      //   // if (event.type == DatabaseEventType.childChanged) {
+      //   final documentKey = event.snapshot.key;
+      //   if (documentKey != "DriverLocation") return;
+      //
+      //   final value = event.snapshot.value as String?;
+      //   if (value == null) return;
+      //
+      //   final splitedValue = value.split(",");
+      //   if (splitedValue.length != 2) return;
+      //   final newPosition = LatLng(
+      //       double.parse(splitedValue[0]), double.parse(splitedValue[1]));
+      //   _updateMarker(newPosition, useCar: true);
+
+      if (order != null && order?.estimateTime != null) {
+        deliveryEstimatedTime = order?.estimateTime;
+        final newPosition = LatLng(
+                double.parse(order!.driverLatitude.toString()), double.parse(order!.driverLongitude.toString()));
+          _updateMarker(newPosition, useCar: true);
+      }
+      // }
+      // });
+    } catch (e) {
+      print("Error in initListener: $e");
+    } finally {
+      setMapLoading = false;
+    }
   }
 
   Future<void> createCustomMarker() async {
@@ -136,66 +146,25 @@ class UserOrderTrackingProvider extends DefaultChangeNotifier {
     notify();
   }
 
-  Future<void> getOrder(BuildContext context, num id) async {
+  Future<void> getOrder(BuildContext context, num id, bool showLoader) async {
     if (await ConnectivityService.isConnected) {
-      // ignore: use_build_context_synchronously
-      Loader.show(context);
+      if (showLoader) Loader.show(context);
       var result = await _api.getOrder(id: id);
 
       return result.when(
         (value) async {
           order = value;
           notify();
-          Loader.dismiss(context);
+          if (showLoader) Loader.dismiss(context);
         },
         (error) {
           context.showFailureSnackBar(error);
-          Loader.dismiss(context);
+          if (showLoader) Loader.dismiss(context);
         },
       );
     } else {
       // ignore: use_build_context_synchronously
       context.showFailureSnackBar(kNoInternet);
-    }
-  }
-
-  Future<void> getEstimatedTime(LatLng? orgin, LatLng? destination,
-      {bool showLoader = true}) async {
-    final now = DateTime.now();
-
-    if (_lastEstimatedTimeCall != null &&
-        now.difference(_lastEstimatedTimeCall!).inMinutes < 1) {
-      return;
-    }
-
-    _lastEstimatedTimeCall = now;
-
-    if (orgin == null || destination == null) {
-      deliveryEstimatedTime = null;
-      setEstimatedLoading = false;
-      notify();
-      return;
-    }
-
-    if (await ConnectivityService.isConnected) {
-      if (showLoader) deliveryEstimatedTime = null;
-      if (showLoader) setEstimatedLoading = true;
-
-      var result = await _googleMapApi.getEstimatedTime(
-          origin: orgin, destination: destination);
-
-      return result.when(
-        (value) async {
-          if (showLoader) setEstimatedLoading = false;
-          deliveryEstimatedTime = value.estimatedTime;
-          notify();
-        },
-        (error) {
-          if (showLoader) setEstimatedLoading = false;
-        },
-      );
-    } else {
-      if (showLoader) setEstimatedLoading = false;
     }
   }
 }

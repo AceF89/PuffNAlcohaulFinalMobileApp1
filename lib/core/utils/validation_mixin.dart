@@ -30,10 +30,10 @@ mixin ValidationMixin {
       return 'Please enter the card number';
     }
 
-    RegExp regex = RegExp(r'^\d{16}$');
+    RegExp regex = RegExp(r'^\d{15,16}$');
 
     if (!regex.hasMatch(value)) {
-      return 'Please enter a valid 16-digit card number';
+      return 'Please enter a valid 15 or 16-digit card number';
     }
 
     return null;
@@ -63,10 +63,10 @@ mixin ValidationMixin {
       return 'Please enter the security code';
     }
 
-    RegExp regex = RegExp(r'^\d{3}$');
+    RegExp regex = RegExp(r'^\d{3,4}$');
 
     if (!regex.hasMatch(value)) {
-      return 'Please enter a valid 3-digit security code';
+      return 'Please enter a valid 3 or 4-digit security code';
     }
 
     return null;

@@ -10,14 +10,16 @@ const double _kLoaderSize = 45.0;
 class Loader {
   Loader._();
 
-  static Widget circularProgressIndicator({double size = _kLoaderSize, double strokeWidth = 4.0}) {
+  static Widget circularProgressIndicator(
+      {double size = _kLoaderSize, double strokeWidth = 4.0}) {
     return Center(
       child: SizedBox(
         height: size,
         width: size,
         child: CircularProgressIndicator(
           strokeWidth: strokeWidth,
-          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
+          valueColor:
+              const AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
           backgroundColor: Colors.grey.shade200,
         ),
       ),
@@ -30,6 +32,15 @@ class Loader {
 
   static void dismiss(BuildContext context) {
     Navigator.pop(context);
+    //   if (!Navigator.of(context).canPop()) return;
+
+    //   final NavigatorState navigator = Navigator.of(context);
+    //   navigator.popUntil((route) {
+    //     if (route is _LoaderDialog) {
+    //       navigator.pop();
+    //     }
+    //     return route is! _LoaderDialog;
+    //   });
   }
 }
 
@@ -51,7 +62,8 @@ class _LoaderDialog extends PopupRoute {
   Duration get transitionDuration => const Duration(milliseconds: 300);
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
+  Widget buildPage(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation) {
     Widget child = const SizedBox.shrink();
 
     if (message != null) {

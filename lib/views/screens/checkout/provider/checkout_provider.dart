@@ -7,6 +7,7 @@ import 'package:alcoholdeliver/core/constants/constants.dart';
 import 'package:alcoholdeliver/core/helpers/extensions.dart';
 import 'package:alcoholdeliver/core/utils/enums.dart';
 import 'package:alcoholdeliver/core/utils/file_utils.dart';
+import 'package:alcoholdeliver/model/appsettings_model.dart';
 import 'package:alcoholdeliver/model/cart.dart';
 import 'package:alcoholdeliver/model/charge_card_res.dart';
 import 'package:alcoholdeliver/model/file_upload_response.dart';
@@ -40,6 +41,7 @@ class CheckoutProvider extends DefaultChangeNotifier {
   final StoreApi _storeApi = StoreApi.instance;
 
   Cart? cartData;
+  AppSettingModel? appSettings;
   bool isUserWithinDeliveryRadius = false;
   TipPercentage? selectedTip = TipPercentage.twenty;
   DeliveryMethod deliveryMethod = DeliveryMethod.delivery;
@@ -487,12 +489,40 @@ class CheckoutProvider extends DefaultChangeNotifier {
         expiryMonth: validUntil.text.trim().split('/')[0],
         expiryYear: '20${validUntil.text.trim().split('/')[1]}',
         cvv: securityCode.text.trim(),
+        token: appSettings!.value!
       );
 
       return result.when(
         (value) async {
           Loader.dismiss(context);
           return value;
+        },
+        (error) {
+          Loader.dismiss(context);
+          context.showFailureSnackBar(error);
+          return null;
+        },
+      );
+    } else {
+      // ignore: use_build_context_synchronously
+      context.showFailureSnackBar(kNoInternet);
+      return null;
+    }
+  }
+
+  Future getAllAppSettings(BuildContext context) async {
+    if (await ConnectivityService.isConnected) {
+      // ignore: use_build_context_synchronously
+      Loader.show(context);
+
+      var result = await _api.getAllAppSettings();
+
+      return result.when(
+        (value) async {
+          appSettings = value.first;
+          notify();
+          Loader.dismiss(context);
+          // return value;
         },
         (error) {
           Loader.dismiss(context);

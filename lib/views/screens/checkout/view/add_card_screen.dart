@@ -30,6 +30,7 @@ class _AddCardScreenState extends State<AddCardScreen> with ValidationMixin {
       return;
     }
 
+    await provider.getAllAppSettings(context);
     final cardToken = await provider.getTokenFromStripeCard(context);
     final cardTokenId = cardToken?.id ?? '';
 

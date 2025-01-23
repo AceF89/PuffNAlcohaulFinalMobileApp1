@@ -31,7 +31,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 EdgeInsetsGeometry _kDefaultPadding =
-    EdgeInsets.symmetric(horizontal: PaddingValues.padding.h);
+EdgeInsets.symmetric(horizontal: PaddingValues.padding.h);
 
 class HomepageScreen extends StatefulWidget {
   const HomepageScreen({super.key});
@@ -44,14 +44,11 @@ class _HomepageScreenState extends State<HomepageScreen> {
   late HomepageProvider provider;
   late CartProvider _cartProvider;
 
-  late Timer _timer;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initOneSingle();
-      _timer = Timer.periodic(Duration(seconds: 15), (timer) => provider.listenUserLocation(context),);
       if (preferences.isUser) _cartProvider.getCart(context);
       if (preferences.isUser) provider.getMe(context);
       if (preferences.isUser) provider.getDefaultAddress();
@@ -74,7 +71,6 @@ class _HomepageScreenState extends State<HomepageScreen> {
 
   @override
   void dispose() {
-    _timer.cancel();
     super.dispose();
   }
 
@@ -171,7 +167,7 @@ class _UserHomescreenState extends State<UserHomescreen> {
           CongratulationCard(
             snippet: widget.provider.snippets.first,
             subMessage:
-                'You have ${preferences.getUserProfile()?.balanceloyaltyPoint} Loyalty Points',
+            'You have ${preferences.getUserProfile()?.balanceloyaltyPoint} Loyalty Points',
           ),
         SizedBoxH30(),
         // const NewOrderPlacedCard(),
@@ -205,20 +201,20 @@ class _UserHomescreenState extends State<UserHomescreen> {
           widget.provider.isLoadingDeliveryOrder
               ? Loader.circularProgressIndicator()
               : widget.provider.orders.isEmpty
-                  ? const Center(child: NoDataAvailable(height: Sizes.s100))
-                  : SizedBox(
-                      height: Sizes.s240.h,
-                      width: double.infinity,
-                      child: ListView.builder(
-                        itemCount: widget.provider.orders.length,
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (BuildContext context, int index) {
-                          final curData = widget.provider.orders[index];
-                          return HomepageOrderCard(data: curData);
-                        },
-                      ),
-                    ),
+              ? const Center(child: NoDataAvailable(height: Sizes.s100))
+              : SizedBox(
+            height: Sizes.s240.h,
+            width: double.infinity,
+            child: ListView.builder(
+              itemCount: widget.provider.orders.length,
+              shrinkWrap: true,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (BuildContext context, int index) {
+                final curData = widget.provider.orders[index];
+                return HomepageOrderCard(data: curData);
+              },
+            ),
+          ),
         ],
         SizedBoxH20(),
         _buildViewLabel('Featured Products', () {
@@ -230,21 +226,21 @@ class _UserHomescreenState extends State<UserHomescreen> {
         widget.provider.loading
             ? Loader.circularProgressIndicator()
             : widget.provider.featuredProducts.isEmpty
-                ? const Center(child: NoDataAvailable(height: Sizes.s100))
-                : SizedBox(
-                    height: Sizes.s200.h,
-                    width: double.infinity,
-                    child: ListView.builder(
-                      itemCount: widget.provider.featuredProducts.length,
-                      shrinkWrap: true,
-                      primary: true,
-                      scrollDirection: Axis.horizontal,
-                      itemBuilder: (BuildContext context, int index) {
-                        final curData = widget.provider.featuredProducts[index];
-                        return HomepageProductCard(data: curData);
-                      },
-                    ),
-                  ),
+            ? const Center(child: NoDataAvailable(height: Sizes.s100))
+            : SizedBox(
+          height: Sizes.s200.h,
+          width: double.infinity,
+          child: ListView.builder(
+            itemCount: widget.provider.featuredProducts.length,
+            shrinkWrap: true,
+            primary: true,
+            scrollDirection: Axis.horizontal,
+            itemBuilder: (BuildContext context, int index) {
+              final curData = widget.provider.featuredProducts[index];
+              return HomepageProductCard(data: curData);
+            },
+          ),
+        ),
         SizedBoxH20(),
         _buildViewLabel('Categories', () {
           Navigator.of(context).pushNamed(
@@ -257,37 +253,37 @@ class _UserHomescreenState extends State<UserHomescreen> {
         widget.provider.loading
             ? Loader.circularProgressIndicator()
             : widget.provider.categories.isEmpty
-                ? const NoDataAvailable()
-                : GridView.builder(
-                    itemCount: widget.provider.categories.length,
-                    // itemCount: provider.categories.length > 4 ? 4 : provider.categories.length,
-                    shrinkWrap: true,
-                    primary: true,
-                    padding: EdgeInsets.zero,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 2.5,
-                      crossAxisSpacing: Sizes.s20,
-                      mainAxisSpacing: Sizes.s20,
-                      mainAxisExtent: 60,
-                    ),
-                    itemBuilder: (context, index) {
-                      final curCategory = widget.provider.categories[index];
+            ? const NoDataAvailable()
+            : GridView.builder(
+          itemCount: widget.provider.categories.length,
+          // itemCount: provider.categories.length > 4 ? 4 : provider.categories.length,
+          shrinkWrap: true,
+          primary: true,
+          padding: EdgeInsets.zero,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate:
+          const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 2.5,
+            crossAxisSpacing: Sizes.s20,
+            mainAxisSpacing: Sizes.s20,
+            mainAxisExtent: 60,
+          ),
+          itemBuilder: (context, index) {
+            final curCategory = widget.provider.categories[index];
 
-                      return CategoryCard(
-                        label: curCategory.name ?? 'N/A',
-                        icon: curCategory.fullIconFileUrl ?? '',
-                        onTap: () {
-                          Navigator.of(context).pushNamed(
-                            Routes.product,
-                            arguments: curCategory,
-                          );
-                        },
-                      );
-                    },
-                  ),
+            return CategoryCard(
+              label: curCategory.name ?? 'N/A',
+              icon: curCategory.fullIconFileUrl ?? '',
+              onTap: () {
+                Navigator.of(context).pushNamed(
+                  Routes.product,
+                  arguments: curCategory,
+                );
+              },
+            );
+          },
+        ),
         SizedBoxH40(),
       ],
     );
@@ -381,23 +377,23 @@ class _DriverHomescreenState extends State<DriverHomescreen> {
               _provider.loading
                   ? Loader.circularProgressIndicator()
                   : _provider.orders.isEmpty
-                      ? const Center(child: NoDataAvailable())
-                      : Flexible(
-                          fit: FlexFit.loose,
-                          child: ListView.builder(
-                            itemCount: _provider.orders.length,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemBuilder: (ctx, index) {
-                              final curOrder = _provider.orders[index];
+                  ? const Center(child: NoDataAvailable())
+                  : Flexible(
+                fit: FlexFit.loose,
+                child: ListView.builder(
+                  itemCount: _provider.orders.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (ctx, index) {
+                    final curOrder = _provider.orders[index];
 
-                              return DriverHomepageCard(
-                                orders: curOrder,
-                                onToggle: _provider.onToggle,
-                              );
-                            },
-                          ),
-                        ),
+                    return DriverHomepageCard(
+                      orders: curOrder,
+                      onToggle: _provider.onToggle,
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         );

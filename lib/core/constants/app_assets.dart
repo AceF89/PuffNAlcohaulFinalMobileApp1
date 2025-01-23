@@ -61,6 +61,7 @@ class AppAssets {
   static const String icChecked = 'assets/icons/icChecked.svg';
   static const String icCart2 = 'assets/icons/icCart2.svg';
   static const String icProfile = 'assets/icons/icProfile.svg';
+  static const String icReload = 'assets/icons/icReload.svg';
   static const String icAdd2 = 'assets/icons/icAdd2.svg';
   static const String icHome2 = 'assets/icons/icHome2.svg';
   static const String icHorizontalOption = 'assets/icons/icHorizontalOption.svg';

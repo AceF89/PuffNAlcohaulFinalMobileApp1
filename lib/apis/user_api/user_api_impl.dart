@@ -19,16 +19,19 @@ class _UserApiImpl extends UserApiService {
   }
 
   @override
-  Future<Result<String, String>> pingUser({required double lat,required double long}) async {
-    var result = await request(requestType: RequestType.post, path: '/User/Ping?lat=$lat&log=$long');
+  Future<Result<String, String>> pingUser(
+      {required double lat, required double long}) async {
+    if (lat == 0 || long == 0) return Success("");
+    var result = await request(
+        requestType: RequestType.post, path: '/User/Ping?lat=$lat&log=$long');
     return result.when(
-          (response) {
+      (response) {
         if (response['statusCode'] == 200) {
           return Success(response['message']);
         }
         return Failure(response['message']);
       },
-          (error) => Failure(error),
+      (error) => Failure(error),
     );
   }
 

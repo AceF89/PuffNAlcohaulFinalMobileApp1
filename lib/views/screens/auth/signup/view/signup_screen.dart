@@ -215,12 +215,87 @@ class _SignupScreenState extends State<SignupScreen> with ValidationMixin {
                                 ),
                                 const Text('I agree with'),
                                 SizedBoxW05(),
-                                const Text(
-                                  'Terms & Conditions',
-                                  style: TextStyle(
-                                    decoration: TextDecoration.underline,
-                                    decorationColor: AppColors.primaryColor,
-                                    color: AppColors.primaryColor,
+                                InkWell(
+                                  onTap: () {
+                                    showDialog(context: context, builder: (context) {
+                                      return AlertDialog(
+                                        backgroundColor: Colors.white,
+                                        title: const Text("Terms and conditions",style: TextStyle(fontWeight: FontWeight.w700,),),
+                                        content: const SingleChildScrollView(
+                                          child: Text('''Terms and Conditions for Puff N AlcoHaul Inc.
+                                          
+1. Introduction
+Welcome to Puff N AlcoHaul Inc. ("the App" or "the Service"), a comprehensive platform dedicated to delivering a wide variety of alcoholic beverages directly to your doorstep. These Terms and Conditions ("Terms") serve as a detailed guide to your rights, responsibilities, and obligations when using our Service. By accessing, browsing, or registering on the App, you agree to comply with these Terms, which constitute a legally binding agreement between you and Puff N AlcoHaul Inc. If you disagree with any part of these Terms, you must immediately stop using the Service.
+
+2. Eligibility
+2.1 Legal Drinking Age Requirement: To access and use the Service, you must meet the legal drinking age in your jurisdiction, which is typically 21 years old in the United States. By registering or placing an order, you confirm that you meet this requirement. Puff N AlcoHaul Inc. reserves the right to verify your age at any time.
+2.2 Geographical Restrictions: The Service is only available in jurisdictions where alcohol delivery is legally permitted. You are responsible for ensuring that your use of the App complies with the laws of your locality.
+2.3 Prohibited Users: The Service is not available to individuals who have been previously banned by Puff N AlcoHaul Inc. or those who fail to meet the eligibility criteria.
+
+3. Account Registration
+3.1 Registration Requirements: To use the Service, users must create an account by providing accurate, complete, and current information, including a valid email address, phone number, and proof of age. Providing false or misleading information is strictly prohibited.
+3.2 Account Security: Users are responsible for safeguarding their account credentials. Sharing your account with others or allowing unauthorized access is prohibited. Notify Puff N AlcoHaul Inc. immediately if you suspect unauthorized use of your account.
+3.3 Account Suspension or Termination: Puff N AlcoHaul Inc. reserves the right to suspend or permanently terminate accounts for violating these Terms, engaging in fraudulent activities, or for any other reason at our discretion.
+
+4. Ordering and Delivery
+4.1 Placing an Order: Orders can only be placed through the App. Users must ensure that all details, including delivery address and product selection, are accurate. Puff N AlcoHaul Inc. reserves the right to reject or cancel orders due to stock limitations, regulatory constraints, or other reasons.
+4.2 Identity Verification at Delivery: Upon delivery, users must present a valid government- issued ID that matches the name on the order. Failure to provide appropriate identification will result in the cancellation of the delivery, and a cancellation fee may be applied.
+4.3 Delivery Zones and Timing: Delivery services are restricted to designated geographical areas. While we strive to deliver orders promptly, factors such as traffic, weather, or other external conditions may result in delays. Updates will be communicated through the App.
+4.4 Failed Deliveries: If delivery cannot be completed due to user unavailability, refusal to provide identification, or providing incorrect information, a restocking fee may be applied.
+
+5. Payment
+5.1 Accepted Payment Methods: Payments must be made at the time of placing an order using accepted methods, including credit cards, debit cards, and approved digital wallets.
+5.2 Payment Authorization: By providing payment details, users authorize Puff N AlcoHaul Inc. to process the total order amount, including applicable taxes and delivery fees.
+5.3 Refunds and Returns: Refunds may be issued in cases such as incorrect deliveries, damaged goods, or order cancellations. Refund requests must be submitted within 7 days of receiving the order and are subject to approval.
+5.4 Order Cancellation Policy: Orders may be canceled if the request is made before the order has been processed or dispatched. Cancellations after processing may incur fees.
+
+6. Prohibited Activities
+6.1 Resale and Commercial Use: Alcohol purchased through the App is for personal consumption only and cannot be resold or used for commercial purposes.
+6.2 Fraudulent Behavior: Providing false information, using stolen payment methods, or engaging in other fraudulent activities is strictly prohibited and may result in legal action.
+6.3 Interference with the App: Users must not tamper with, hack, or reverse-engineer the App’s functionality or use it for unauthorized purposes.
+
+7. Liability and Disclaimers
+7.1 Service Availability: While Puff N AlcoHaul Inc. aims to provide continuous service, there may be interruptions due to maintenance, technical issues, or other reasons. The App is provided on an "as is" basis.
+7.2 No Warranties: Puff N AlcoHaul Inc. disclaims all warranties, express or implied, including fitness for a particular purpose, merchantability, and non-infringement.
+7.3 Limitation of Liability: To the extent permitted by law, Puff N AlcoHaul Inc. is not liable for any damages, losses, or injuries resulting from the use of the Service, including but not limited to delivery delays, incorrect orders, or unauthorized access to user accounts.
+
+8. Privacy
+8.1 Data Collection: Puff N AlcoHaul Inc. collects personal information such as name, contact details, and order history to facilitate Service delivery. Refer to our Privacy Policy for more details on data use and protection.
+8.2 Third-Party Services: The App may link to third-party platforms, such as payment processors or promotional partners. Puff N AlcoHaul Inc. is not responsible for the privacy practices or terms of these third parties.
+
+9. Intellectual Property 
+All materials, including text, graphics, logos, and other content available on the App, are the intellectual property of Puff N AlcoHaul Inc. or its licensors. Unauthorized use, reproduction, or modification is prohibited.
+
+10. Modifications to Terms
+Puff N AlcoHaul Inc. reserves the right to modify these Terms at any time. Updated Terms will be posted on the App, and continued use of the Service constitutes acceptance of the changes.
+
+11. Governing Law and Dispute Resolution
+11.1 Applicable Law: These Terms are governed by the laws of [Your State/Country], excluding its conflict of law principles.
+11.2 Dispute Resolution: All disputes will be resolved through binding arbitration under the rules of [Arbitration Body], to be held in [Location]. Users waive the right to participate in class-action lawsuits.
+
+12. Contact Us
+For questions or assistance, please contact Puff N AlcoHaul Inc.:
+• Email: info@alcohaulbsw.com
+By using the App, you acknowledge that you have read, understood, and agreed to these comprehensive Terms and Conditions.'''),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            child: const Text('Close'),
+                                          ),
+                                        ],
+                                      );
+                                    },);
+                                  },
+                                  child: const Text(
+                                    'Terms & Conditions',
+                                    style: TextStyle(
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: AppColors.primaryColor,
+                                      color: AppColors.primaryColor,
+                                    ),
                                   ),
                                 ),
                               ],

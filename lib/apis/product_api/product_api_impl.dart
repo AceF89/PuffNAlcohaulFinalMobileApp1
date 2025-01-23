@@ -54,6 +54,33 @@ class _ProductApiImpl extends ProductApiService {
   }
 
   @override
+  Future<Result<List<AppSettingModel>, String>> getAllAppSettings() async {
+    String query = '?pageNumber=1&pageSize=20&filter=Stripe.Publishable.Key';
+
+    var result = await request(
+      requestType: RequestType.get,
+      path: '/AppSetting/GetAll$query',
+    );
+
+    return result.when(
+      (response) {
+        if (response['statusCode'] == 200) {
+          print("response['data'][0] ==> ${response['data'][0].runtimeType}");
+          List<AppSettingModel> cards = [];
+          cards = List<AppSettingModel>.from(
+            response['data'].map((e) => AppSettingModel.fromJson(e)),
+          );
+
+          return Success(cards);
+          // return Success(AppSettingModel.fromJson(response['data'][0]));
+        }
+        return Failure(response['message']);
+      },
+      (error) => Failure(error),
+    );
+  }
+
+  @override
   Future<Result<String, String>> addOrRemoveFromCart({
     required num productId,
     required num quantity,
@@ -169,31 +196,46 @@ class _ProductApiImpl extends ProductApiService {
     required String expiryMonth,
     required String expiryYear,
     required String cvv,
+    required String token,
   }) async {
-    Map<String, dynamic> cardData = {
-      'card[number]': cardNumber,
+    final Map<String, String> cardData = {
+      'card[number]': cardNumber.replaceAll(' ', ''),
       'card[exp_month]': expiryMonth,
-      'card[exp_year]': expiryYear,
+      'card[exp_year]': expiryYear.length == 2 ? '20$expiryYear' : expiryYear,
       'card[cvc]': cvv,
     };
 
-    var result = await urlRequest(
-      requestType: RequestType.post,
-      url: 'https://api.stripe.com/v1/tokens',
-      data: cardData,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization':
-            'Bearer pk_test_51NfQ7FCECePmB1jYouLXV66U5xvFQjHlFV5iorPjK2SCIHgkM4Gi6ME5ww8cfN0fWQSjDIUa1UHzAf3bieIE3zgH00onkgeMaS',
-      },
-    );
+    try {
+      print('Request Data: $cardData'); // Debug log
 
-    return result.when(
-      (response) {
-        return Success(StripeCardRes.fromJson(response));
-      },
-      (error) => Failure(error),
-    );
+      var result = await urlRequest(
+        requestType: RequestType.post,
+        url: 'https://api.stripe.com/v1/tokens',
+        data: cardData,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': 'Bearer $token',
+          'Stripe-Version': '2022-11-15',
+        },
+      );
+
+      return result.when(
+        (response) {
+          print('Stripe Response: $response'); // Debug log
+          if (response['error'] != null) {
+            return Failure(response['error']['message'] ?? 'Card validation failed');
+          }
+          return Success(StripeCardRes.fromJson(response));
+        },
+        (error) {
+          print('Stripe Error: $error'); // Debug log
+          return Failure(error);
+        },
+      );
+    } catch (e) {
+      print('Exception: $e'); // Debug log
+      return Failure(e.toString());
+    }
   }
 
   @override

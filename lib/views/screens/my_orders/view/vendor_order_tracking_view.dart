@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:alcoholdeliver/apis/user_api/user_api.dart';
+import 'package:alcoholdeliver/core/constants/app_assets.dart';
 import 'package:alcoholdeliver/core/constants/app_colors.dart';
 import 'package:alcoholdeliver/core/constants/app_sizes.dart';
 import 'package:alcoholdeliver/core/constants/constants.dart';
@@ -18,33 +22,60 @@ import 'package:alcoholdeliver/views/widgets/scrollable_column.dart';
 import 'package:alcoholdeliver/views/widgets/sized_boxes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:geolocator/geolocator.dart';
 
-class VendorOrderTrackingView extends StatefulWidget {
+class VendorOrderTrackingView extends ConsumerStatefulWidget {
   final Order order;
 
   const VendorOrderTrackingView({super.key, required this.order});
 
   @override
-  State<VendorOrderTrackingView> createState() =>
-      _VendorOrderTrackingViewState();
+  ConsumerState<VendorOrderTrackingView> createState() => _VendorOrderTrackingViewState();
 }
 
-class _VendorOrderTrackingViewState extends State<VendorOrderTrackingView> {
+class _VendorOrderTrackingViewState extends ConsumerState<VendorOrderTrackingView> {
   late VendorOrderTrackingProvider _provider;
   late DriverDeliveryProvider _dProvider;
+  final userApi = UserApi.instance;
+  Timer? _timer;
+
+
+  void refreshMap(bool showLoader) {
+    _provider.initListener(widget.order.firebaseItemId ?? '', context);
+    _provider.getOrder(context, widget.order.id ?? 0, showLoader);
+    // _provider.setOrder(widget.order);
+  }
+
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _provider.initListener(widget.order.firebaseItemId ?? '');
-      _dProvider.doorImage = null;
-      _provider.setOrder(widget.order);
-      _provider.getEstimatedTime(
-        widget.order.originCoordinate,
-        widget.order.destinationCoordinate,
-      );
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (mounted) {
+
+        var position = await Geolocator.getCurrentPosition();
+        await userApi.pingUser(lat: position.latitude, long: position.longitude);
+
+        _provider = ref.read(vendorOrderTrackingProvider);
+        _dProvider = ref.read(driverDeliveryProvider);
+        _dProvider.doorImage = null;
+
+        refreshMap(true);
+
+        _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+          if (mounted) {
+            refreshMap(false);
+          }
+        });
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    _provider.dispose();
+    super.dispose();
   }
 
   @override
@@ -76,19 +107,53 @@ class _VendorOrderTrackingViewState extends State<VendorOrderTrackingView> {
             ),
             Padding(
               padding:
-                  EdgeInsets.symmetric(horizontal: PaddingValues.padding.h),
+              EdgeInsets.symmetric(horizontal: PaddingValues.padding.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   /// Traking Informations
                   SizedBoxH20(),
-                  Text(
-                    'Tracking Details',
-                    style: TextStyle(
-                      color: AppColors.primaryFontColor,
-                      fontWeight: FontWeight.w500,
-                      fontSize: Sizes.s20.sp,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Tracking Details',
+                        style: TextStyle(
+                          color: AppColors.primaryFontColor,
+                          fontWeight: FontWeight.w500,
+                          fontSize: Sizes.s20.sp,
+                        ),
+                      ),
+                      // Refresh button set in container with refresh icon and text
+                      InkWell(
+                        onTap: () {
+                          _provider.initListener(widget.order.firebaseItemId ?? '',context,getLocation: true);
+                          // _dProvider.doorImage = null;
+                          _provider.setOrder(widget.order);
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(Sizes.s10.w),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor,
+                            borderRadius: BorderRadius.circular(Sizes.s10.w),
+                          ),
+                          child: Row(
+                            children: [
+                              SvgPicture.asset(AppAssets.icReload, width: Sizes.s20.w),
+                              SizedBoxW05(),
+                              Text(
+                                'Refresh',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: Sizes.s14.sp,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBoxH20(),
                   ColumnText(

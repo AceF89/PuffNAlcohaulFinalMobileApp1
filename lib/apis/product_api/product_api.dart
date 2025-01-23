@@ -1,3 +1,4 @@
+import 'package:alcoholdeliver/model/appsettings_model.dart';
 import 'package:alcoholdeliver/model/cart.dart';
 import 'package:alcoholdeliver/model/charge_card_res.dart';
 import 'package:alcoholdeliver/model/pagination_response.dart';
@@ -43,7 +44,10 @@ abstract class ProductApi {
     required String expiryMonth,
     required String expiryYear,
     required String cvv,
+    required String token,
   });
+
+  Future<Result<List<AppSettingModel>, String>> getAllAppSettings();
 
   Future<Result<String, String>> saveCardTokenToStripe({required String cardToken});
 

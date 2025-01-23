@@ -1,22 +1,24 @@
 import 'dart:convert';
 import 'package:alcoholdeliver/core/constants/constants.dart';
+import 'package:alcoholdeliver/core/helpers/extensions.dart';
 import 'package:alcoholdeliver/model/order.dart';
 import 'package:alcoholdeliver/model/rc/rc_message.dart';
 import 'package:alcoholdeliver/providers/default_change_notifier.dart';
+import 'package:alcoholdeliver/services/connectivity_service.dart';
 import 'package:alcoholdeliver/services/web_socket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 final AutoDisposeChangeNotifierProvider<ChatProvider> chatProvider =
-    ChangeNotifierProvider.autoDispose((ref) => ChatProvider());
+ChangeNotifierProvider.autoDispose((ref) => ChatProvider());
 
 class ChatProvider extends DefaultChangeNotifier {
   Order? currentChatOrder;
   WebSocketChannel? channel;
   String? roomSubscriptionId;
   WebSocketService wsService = WebSocketService();
-
+  bool _isConnected = false;
   List<RcMessage> chatMessages = [];
   final TextEditingController chatController = TextEditingController();
 
@@ -38,21 +40,38 @@ class ChatProvider extends DefaultChangeNotifier {
     final userId = preferences.getUserProfile()?.rcUserId ?? '';
     final authToken = preferences.getUserProfile()?.chatToken ?? '';
 
-    channel = wsService.connectToWS(url: url, userId: userId, authToken: authToken);
+    channel =
+        wsService.connectToWS(url: url, userId: userId, authToken: authToken);
+    _isConnected = true;
+    // check if channel is connected
+    if (channel == null) {
+      initChat(order: order);
+      return;
+    }
 
-    channel?.stream.listen((event) {
-      final Map<String, dynamic> decodedEvent = jsonDecode(event);
+    channel?.stream.listen(
+          (event) {
+        final Map<String, dynamic> decodedEvent = jsonDecode(event);
 
-      /// Handle Result
-      if (decodedEvent["msg"] == "result" || decodedEvent["msg"] == "changed") {
-        handleChatMessages(decodedEvent);
-      }
+        /// Handle Result
+        if (decodedEvent["msg"] == "result" ||
+            decodedEvent["msg"] == "changed") {
+          handleChatMessages(decodedEvent);
+        }
 
-      /// TO Maintain Connection
-      if (decodedEvent["msg"] == "ping") {
-        wsService.responsePong();
-      }
-    });
+        /// TO Maintain Connection
+        if (decodedEvent["msg"] == "ping") {
+          wsService.responsePong();
+        }
+      },
+      onDone: () {
+        _isConnected = false;
+      },
+      onError: (error) {
+        debugPrint('ws error $error');
+        _isConnected = false;
+      },
+    );
 
     roomSubscriptionId = wsService.subscribeRoom(roomId: chatRoomId);
 
@@ -63,9 +82,23 @@ class ChatProvider extends DefaultChangeNotifier {
     );
   }
 
-  void handleOnSendMessage(context) {
-    if(chatController.text.trim().isEmpty) {
-      context.showSuccessSnackBar('Please enter a message');
+  Future<void> ensureConnection() async {
+    while (!await ConnectivityService.isConnected || !_isConnected) {
+      initChat(order: currentChatOrder!);
+      // Allow some time for reconnection
+      await Future.delayed(const Duration(seconds: 1));
+      if (_isConnected) {
+        // handleOnSendMessage(context);
+        break;
+      }
+    }
+  }
+
+  Future<void> handleOnSendMessage(BuildContext context) async {
+    // check socket connection
+    await ensureConnection();
+    if (chatController.text.trim().isEmpty) {
+      context.showFailureSnackBar('Please enter a message');
       return;
     }
     wsService.sendMessageOnChannel(
@@ -90,7 +123,8 @@ class ChatProvider extends DefaultChangeNotifier {
             username: element['u']['username'],
             userFullName: element['u']['name'],
             msg: element['msg'],
-            createdAt: DateTime.fromMillisecondsSinceEpoch(element['ts']['\$date']),
+            createdAt:
+            DateTime.fromMillisecondsSinceEpoch(element['ts']['\$date']),
           );
           chatMessages.add(message);
         }
@@ -125,7 +159,8 @@ class ChatProvider extends DefaultChangeNotifier {
           username: element['u']['username'],
           userFullName: element['u']['name'],
           msg: element['msg'],
-          createdAt: DateTime.fromMillisecondsSinceEpoch(element['ts']['\$date']),
+          createdAt:
+          DateTime.fromMillisecondsSinceEpoch(element['ts']['\$date']),
         );
         chatMessages.insert(0, message);
       }

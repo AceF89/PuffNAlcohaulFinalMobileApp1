@@ -6,6 +6,7 @@ import 'package:alcoholdeliver/model/order.dart';
 import 'package:alcoholdeliver/model/store.dart';
 import 'package:alcoholdeliver/providers/default_change_notifier.dart';
 import 'package:alcoholdeliver/services/connectivity_service.dart';
+import 'package:alcoholdeliver/views/screens/home/main_home.dart';
 import 'package:alcoholdeliver/views/screens/homepage/provider/homepage_provider.dart';
 import 'package:alcoholdeliver/views/widgets/loader.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -110,7 +111,6 @@ class DriverHomepageProvider extends DefaultChangeNotifier {
 
   void onToggle(BuildContext context, num id, bool n) async {
     int orderIndex = orders.indexWhere((e) => e.id == id);
-    print("_homepageProvider.value?.latitude ===>");
     if (orderIndex != -1) {
       final curOrder = orders.firstWhere((e) => e.id == id);
 
@@ -125,10 +125,6 @@ class DriverHomepageProvider extends DefaultChangeNotifier {
 
       await setOrderStatus(context, id, newStatus);
 
-      orders.removeWhere((e) => e.id == id);
-      print("_homepageProvider.value?.latitude ===> ${_homepageProvider.value?.latitude}");
-      print("_homepageProvider.value?.longitude ===> ${_homepageProvider.value?.longitude}");
-      await _orderApi.updateDriverLocationFormLatLong(location: LatLng(_homepageProvider.value?.latitude??0.0, _homepageProvider.value?.longitude??0.0));
       notify();
     }
   }
@@ -220,6 +216,8 @@ class DriverHomepageProvider extends DefaultChangeNotifier {
       return result.when(
         (value) async {
           Loader.dismiss(context);
+          orders.removeWhere((e) => e.id == orderId);
+          // const MainHome().startBgLocator();
           context.showSuccessSnackBar('Status updated successfully');
         },
         (error) {
